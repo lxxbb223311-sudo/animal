@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>消息 - 流浪喵之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 原生 SPA 级平滑切换动画 */
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 0.5; } to { transform: translateX(100%); opacity: 0; } }
+        .page-enter { animation: slideInRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .page-leave-right { animation: slideOutRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        * { -webkit-tap-highlight-color: transparent; }
+
+        /* 炫技 A：卡片级联上浮滑入动效 */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stagger-item {
+            opacity: 0;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* 炫技 C：未读红点 Pop 消失动效 */
+        @keyframes badgePopOut {
+            0% { transform: scale(1); opacity: 1; }
+            40% { transform: scale(1.3); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .badge-exit { animation: badgePopOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+        /* 炫技 B：左滑删除核心布局逻辑 */
+        .swipe-item-container {
+            position: relative;
+            overflow: hidden;
+            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+        .swipe-content {
+            position: relative;
+            z-index: 10;
+            background: white;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+        .delete-btn-zone {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 80px;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #EF4444; /* Tailwind red-500 */
+            border-top-right-radius: 16px;
+            border-bottom-right-radius: 16px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="bg-[#E6F2FF] min-h-screen flex justify-center font-sans antialiased text-gray-800 overflow-hidden selection:bg-[#4FBFFF] selection:text-white">
+
+    <main id="app-main" class="w-full max-w-[400px] h-[100dvh] relative flex flex-col page-enter bg-[#E6F2FF]">
+
+        <header class="pt-[env(safe-area-inset-top)] pb-3 flex-shrink-0 z-40 bg-[#E6F2FF]/95 backdrop-blur-md sticky top-0 border-b border-white/50">
+            <div class="pt-10 px-5 flex items-center justify-between relative">
+                <button onclick="handleBack()" class="p-2 -ml-2 active:scale-90 transition-transform text-gray-900 z-10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="flex items-end gap-6 absolute left-1/2 -translate-x-1/2">
+                    <span class="text-[14px] font-medium text-gray-400 transition-all duration-300">通知</span>
+                    <span class="text-[18px] font-bold text-gray-900 transition-all duration-300">私信</span>
+                </div>
+
+                <div class="w-6"></div>
+            </div>
+        </header>
+
+        <div id="message-list" class="flex-1 overflow-y-auto hide-scrollbar px-5 pt-6 pb-[env(safe-area-inset-bottom)] flex flex-col gap-4">
+            </div>
+
+    </main>
+
+    <script>
+        // --- A. 数据驱动 (Message Data) ---
+        const messageData = [
+            { id: 1, name: '喵星人', avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=miaostar', text: '好的，下次一起喂小猫。', time: '星期五', unread: 6 },
+            { id: 2, name: '小红', avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=xiaohong', text: '小橘今天好像不太开心呢...', time: '星期四', unread: 2 },
+            { id: 3, name: '流浪猫救助站', avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=helper', text: '收到您的捐赠申请，正在审核。', time: '昨天', unread: 0 },
+            { id: 4, name: '小黄', avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=xiaohuang', text: '快看这张图片！', time: '14:20', unread: 1 },
+            { id: 5, name: '系统消息', avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=system', text: '欢迎加入流浪喵之家！', time: '前天', unread: 0 },
+            { id: 6, name: 'Cc', avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=Cc', text: '那只蓝猫现在领养了吗？', time: '星期一', unread: 0 }
+        ];
+
+        // --- B. 炫技：渲染函数 (Staggered Render) ---
+        function renderMessages() {
+            const container = document.getElementById('message-list');
+            let html = '';
+
+            messageData.forEach((msg, index) => {
+                const delay = index * 0.1; // 级联延迟
+                const badgeHtml = msg.unread > 0 
+                    ? `<div id="badge-${msg.id}" class="bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm">${msg.unread}</div>`
+                    : '';
+
+                html += `
+                <div class="swipe-item-container stagger-item" style="animation-delay: ${delay}s;" id="container-${msg.id}">
+                    <div class="delete-btn-zone" onclick="deleteMessage(${msg.id})">删除</div>
+                    
+                    <div class="swipe-content flex items-center gap-4 bg-white p-4 rounded-[16px] shadow-sm border border-white" 
+                         id="content-${msg.id}"
+                         onclick="readMessage(${msg.id})"
+                         ontouchstart="handleTouchStart(event, ${msg.id})"
+                         ontouchmove="handleTouchMove(event, ${msg.id})"
+                         ontouchend="handleTouchEnd(event, ${msg.id})">
+                        
+                        <img src="${msg.avatar}" class="w-12 h-12 rounded-full border border-gray-100 object-cover shadow-sm">
+                        
+                        <div class="flex-1 flex flex-col justify-center min-w-0">
+                            <span class="text-[15px] font-bold text-gray-900 mb-0.5">${msg.name}</span>
+                            <span class="text-[13px] text-gray-400 font-medium truncate">${msg.text}</span>
+                        </div>
+
+                        <div class="flex flex-col items-end gap-2 shrink-0">
+                            <span class="text-[11px] text-gray-400 font-medium">${msg.time}</span>
+                            ${badgeHtml}
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- C. 炫技核心：原生左滑删除逻辑 (Swipe Logic) ---
+        let startX = 0;
+        let currentX = 0;
+        let activeSwipeId = null;
+
+        function handleTouchStart(e, id) {
+            startX = e.touches[0].clientX;
+            const content = document.getElementById(`content-${id}`);
+            content.style.transition = 'none'; // 拖动时取消过度动画
+            activeSwipeId = id;
+        }
+
+        function handleTouchMove(e, id) {
+            if (activeSwipeId !== id) return;
+            const x = e.touches[0].clientX;
+            const deltaX = x - startX;
+            const content = document.getElementById(`content-${id}`);
+
+            // 只允许向左滑动，限制最大滑动距离为 80px (删除按钮宽度)
+            if (deltaX < 0) {
+                const move = Math.max(deltaX, -80);
+                content.style.transform = `translateX(${move}px)`;
+                currentX = move;
+            } else {
+                content.style.transform = `translateX(0px)`;
+                currentX = 0;
+            }
+        }
+
+        function handleTouchEnd(e, id) {
+            const content = document.getElementById(`content-${id}`);
+            content.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+
+            // 吸附阈值判断
+            if (currentX < -40) {
+                content.style.transform = `translateX(-80px)`; // 固定打开
+            } else {
+                content.style.transform = `translateX(0px)`; // 复位
+            }
+            activeSwipeId = null;
+        }
+
+        // --- 删除消息流程 (带高度坍缩动画) ---
+        function deleteMessage(id) {
+            const container = document.getElementById(`container-${id}`);
+            const content = document.getElementById(`content-${id}`);
+            
+            // 阶段 1：向左完全滑走
+            content.style.transform = `translateX(-100%)`;
+            content.style.opacity = '0';
+            
+            setTimeout(() => {
+                // 阶段 2：高度归零
+                container.style.height = '0px';
+                container.style.marginBottom = '-16px'; // 抵消 gap
+                container.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // 阶段 3：彻底移除 DOM
+                    container.remove();
+                    // 此时可以去更新数据源 messageData
+                }, 400);
+            }, 200);
+        }
+
+        // --- D. 炫技：消除未读状态 ---
+        function readMessage(id) {
+            // 如果是在侧滑状态，点击主体则复位
+            const content = document.getElementById(`content-${id}`);
+            if (content.style.transform === 'translateX(-80px)') {
+                content.style.transform = 'translateX(0px)';
+                return;
+            }
+
+            // 模拟进入聊天室
+            const badge = document.getElementById(`badge-${id}`);
+            if (badge) {
+                badge.classList.add('badge-exit'); // 播放 pop 消失动画
+                setTimeout(() => {
+                    badge.remove();
+                    // 同时更新数据对象状态
+                    const item = messageData.find(m => m.id === id);
+                    if(item) item.unread = 0;
+                }, 400);
+            }
+            console.log(`正在进入与 ${id} 的聊天...`);
+        }
+
+        // --- 路由与返回 ---
+        function handleBack() {
+            const main = document.getElementById('app-main');
+            main.classList.remove('page-enter');
+            main.classList.add('page-leave-right');
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 300); 
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMessages();
+        });
+    </script>
+</body>
+</html>

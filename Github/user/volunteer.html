@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>志愿者申请 - 流浪喵之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 原生 SPA 级平滑切换动画 */
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 0.5; } to { transform: translateX(100%); opacity: 0; } }
+        .page-enter { animation: slideInRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .page-leave-right { animation: slideOutRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; }
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
+
+        /* 炫技 A：表单验证失败的物理级颤动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: #EF4444 !important; }
+
+        /* 成功 Toast 动画 */
+        @keyframes toastPop {
+            0% { transform: translate(-50%, 20px) scale(0.9); opacity: 0; }
+            10% { transform: translate(-50%, 0) scale(1.05); opacity: 1; }
+            90% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -20px) scale(0.9); opacity: 0; }
+        }
+        .toast-active { animation: toastPop 2s forwards; }
+    </style>
+</head>
+<body class="bg-[#E6F2FF] min-h-screen flex justify-center font-sans antialiased text-gray-800 overflow-hidden selection:bg-[#4FBFFF] selection:text-white">
+
+    <main id="app-main" class="w-full max-w-[400px] h-[100dvh] relative flex flex-col page-enter bg-[#E6F2FF]">
+
+        <header class="pt-[env(safe-area-inset-top)] pb-3 flex-shrink-0 z-40">
+            <div class="pt-8 px-5 flex items-center justify-between relative">
+                <button onclick="handleBack()" class="p-2 -ml-2 active:scale-90 transition-transform text-gray-900 z-10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h1 class="text-[17px] font-bold text-gray-900 absolute left-1/2 -translate-x-1/2 tracking-wide">志愿者申请</h1>
+                <div class="w-6"></div>
+            </div>
+        </header>
+
+        <div class="flex-1 px-6 pt-4 flex flex-col gap-6">
+            <p class="text-[14px] text-gray-500 font-medium px-1">请简单描述您想成为志愿者的原因及相关经验：</p>
+            
+            <div id="input-container" class="relative bg-white rounded-[24px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border-2 border-transparent transition-all duration-300 focus-within:shadow-[0_10px_25px_rgba(79,191,255,0.15)] focus-within:border-[#4FBFFF]/30 focus-within:-translate-y-1">
+                <textarea 
+                    id="volunteer-content"
+                    oninput="updateCount(this)"
+                    placeholder="输入内容..." 
+                    class="w-full h-[260px] bg-transparent text-[15px] leading-relaxed text-gray-800 placeholder-gray-300 resize-none"
+                ></textarea>
+                
+                <div id="char-count" class="absolute bottom-5 right-6 text-[11px] font-black tracking-widest text-gray-300 transition-colors">
+                    0/200
+                </div>
+            </div>
+        </div>
+
+        <div class="px-8 pb-[calc(2.5rem+env(safe-area-inset-bottom))] flex-shrink-0 z-50">
+            <button 
+                id="submit-btn"
+                onclick="handleSubmit()" 
+                class="w-full bg-[#4FBFFF] text-white text-[16px] font-black rounded-full py-[14px] shadow-[0_8px_25px_rgba(79,191,255,0.3)] active:scale-95 transition-all flex justify-center items-center gap-3"
+            >
+                <span>申 请</span>
+            </button>
+        </div>
+
+        <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 backdrop-blur-md text-white px-6 py-3 rounded-2xl shadow-2xl z-[100] text-[15px] font-bold opacity-0 pointer-events-none flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+            申请成功
+        </div>
+
+    </main>
+
+    <script>
+        // --- D. 输入防抖与字数限制 ---
+        function updateCount(textarea) {
+            const container = document.getElementById('input-container');
+            const counter = document.getElementById('char-count');
+            
+            // 移除错误态
+            container.classList.remove('animate-shake');
+
+            let len = textarea.value.length;
+            if (len > 200) {
+                textarea.value = textarea.value.substring(0, 200);
+                len = 200;
+            }
+
+            counter.textContent = `${len}/200`;
+            
+            // 视觉警告逻辑：超过 180 字变色
+            if (len >= 180) {
+                counter.classList.replace('text-gray-300', 'text-red-400');
+            } else {
+                counter.classList.replace('text-red-400', 'text-gray-300');
+            }
+        }
+
+        // --- C. 异步状态机与数据闭环 ---
+        function handleSubmit() {
+            const btn = document.getElementById('submit-btn');
+            const textarea = document.getElementById('volunteer-content');
+            const container = document.getElementById('input-container');
+            const content = textarea.value.trim();
+
+            // A. 错误拦截反馈
+            if (!content) {
+                container.classList.add('animate-shake');
+                // 震动结束后移除类名以便下次触发
+                setTimeout(() => container.classList.remove('animate-shake'), 400);
+                return;
+            }
+
+            // B. 进入加载状态
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>提交中...</span>
+            `;
+
+            // C. 模拟网络请求与数据持久化
+            setTimeout(() => {
+                const currentUser = localStorage.getItem('current_session_user') || '游客';
+                const application = {
+                    user: currentUser,
+                    content: content,
+                    time: new Date().toLocaleString(),
+                    status: 'pending'
+                };
+
+                // 保存数据
+                let apps = JSON.parse(localStorage.getItem('volunteer_applications')) || [];
+                apps.unshift(application);
+                localStorage.setItem('volunteer_applications', JSON.stringify(apps));
+
+                // 显示成功状态
+                document.getElementById('toast').classList.add('toast-active');
+                btn.classList.replace('bg-[#4FBFFF]', 'bg-green-500');
+                btn.innerHTML = `
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    <span>已提交</span>
+                `;
+
+                // 成功后闭环跳转
+                setTimeout(() => {
+                    handleBack();
+                }, 1200);
+
+            }, 1500);
+        }
+
+        // --- 路由返回逻辑 ---
+        function handleBack() {
+            const main = document.getElementById('app-main');
+            main.classList.remove('page-enter');
+            main.classList.add('page-leave-right');
+            setTimeout(() => {
+                window.location.href = 'profile.html';
+            }, 300);
+        }
+    </script>
+</body>
+</html>

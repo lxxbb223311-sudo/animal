@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>个人中心 - 流浪喵之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 页面级平滑切换动画 */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 0.5; } to { transform: translateX(100%); opacity: 0; } }
+        
+        .page-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .page-leave-right { animation: slideOutRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
+
+        /* 炫技：级联向上滑入动效 */
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(25px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .stagger-item {
+            opacity: 0;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            will-change: transform, opacity;
+        }
+
+        /* 炫技：心形点赞心跳动效 */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            20% { transform: scale(1.5); }
+            40% { transform: scale(0.9); }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .like-active svg {
+            animation: heartbeat 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            color: #ef4444;
+            fill: #ef4444;
+        }
+
+        /* 瀑布流核心布局优化 */
+        .masonry-grid {
+            column-count: 2;
+            column-gap: 12px;
+            width: 100%;
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 12px;
+        }
+
+        /* Tab 激活指示器动画 */
+        .tab-underline {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-[#E6F2FF] min-h-screen flex justify-center font-sans antialiased text-gray-800 overflow-hidden selection:bg-[#4FBFFF] selection:text-white">
+
+    <main id="app-main" class="w-full max-w-[400px] h-[100dvh] relative flex flex-col page-fade-in bg-[#E6F2FF]">
+
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-5 pt-[env(safe-area-inset-top)] pb-[100px] flex flex-col relative z-10">
+            
+            <header class="pt-8 pb-4 flex justify-between items-center flex-shrink-0">
+                <h1 class="text-[20px] font-black text-gray-900 tracking-tight">我的</h1>
+                <button class="w-8 h-8 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center text-gray-700 active:scale-90 transition-transform">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
+                </button>
+            </header>
+
+            <div class="flex gap-4 items-center mb-6">
+                <div class="relative">
+                    <img id="user-avatar" src="https://api.dicebear.com/7.x/notionists/svg?seed=user" class="w-[68px] h-[60px] rounded-full border-[3px] border-white shadow-md bg-white object-cover">
+                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#4FBFFF] rounded-full border-2 border-white flex items-center justify-center">
+                        <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L9 9l-8 3 8 3 3 8 3-8 8-3-8-3-3-8z"></path></svg>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span id="username-display" class="text-[19px] font-bold text-gray-900">加载中</span>
+                        <div class="flex gap-1">
+                            <span class="bg-[#4FBFFF] text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase">Boy</span>
+                            <span class="bg-[#F1C84B] text-gray-900 text-[9px] px-2 py-0.5 rounded-full font-black">18岁</span>
+                        </div>
+                    </div>
+                    <span class="text-[11px] text-gray-500 font-medium tracking-widest opacity-80">ID: 12345678</span>
+                </div>
+            </div>
+
+            <div class="flex bg-white/40 backdrop-blur-md rounded-2xl p-4 justify-around mb-6 border border-white/50 shadow-sm">
+                <div class="flex flex-col items-center">
+                    <span class="text-[18px] font-black text-gray-900">10</span>
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">关注</span>
+                </div>
+                <div class="w-[1px] h-8 bg-gray-300/30 my-auto"></div>
+                <div class="flex flex-col items-center">
+                    <span class="text-[18px] font-black text-gray-900">10</span>
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">粉丝</span>
+                </div>
+                <div class="w-[1px] h-8 bg-gray-300/30 my-auto"></div>
+                <div class="flex flex-col items-center">
+                    <span class="text-[18px] font-black text-gray-900">10</span>
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">获赞</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3 mb-8">
+                <div class="flex flex-col items-center gap-2 group cursor-pointer" onclick="transitionTo('my-orders.html')">
+                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-active:scale-90 transition-transform border border-white">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-600">我的订单</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer" onclick="transitionTo('account-settings.html')">
+                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-active:scale-90 transition-transform border border-white">
+                        <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-600">设置</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-active:scale-90 transition-transform border border-white">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-600">我的评价</span>
+                </div>
+                <div onclick="transitionTo('volunteer.html', 'slideLeft')" class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-active:scale-90 transition-transform border border-white">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-600">志愿者</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-8 mb-4 px-1 relative">
+                <button onclick="switchTab(0)" class="tab-btn active text-[16px] font-black text-gray-900 transition-all">已发布</button>
+                <button onclick="switchTab(1)" class="tab-btn text-[16px] font-bold text-gray-400 hover:text-gray-600 transition-all">收藏</button>
+                <button onclick="switchTab(2)" class="tab-btn text-[16px] font-bold text-gray-400 hover:text-gray-600 transition-all">赞过</button>
+                <div id="tab-line" class="tab-underline absolute -bottom-1 left-1 w-6 h-1 bg-[#4FBFFF] rounded-full"></div>
+            </div>
+
+            <div id="masonry-feed" class="masonry-grid">
+                </div>
+
+        </div>
+
+        <nav class="fixed bottom-0 w-full max-w-[400px] bg-white rounded-t-[30px] shadow-[0_-8px_30px_rgba(0,0,0,0.04)] pb-[calc(0.8rem+env(safe-area-inset-bottom))] pt-3 px-8 flex justify-between items-center z-50 border-t border-white/60">
+            <button onclick="transitionTo('dashboard.html', 'slideRight')" class="flex flex-col items-center gap-1 group w-12 active:scale-90 transition-transform">
+                <svg class="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.99 9a.75.75 0 11-1.04 1.08l-1.48-1.48V20.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-1.5a.75.75 0 00-.75.75v4.5a.75.75 0 01-.75.75H5.25a.75.75 0 01-.75-.75v-8.06l-1.48 1.48a.75.75 0 11-1.04-1.08l8.99-9z"></path></svg>
+                <span class="text-[9px] font-bold text-gray-400">首页</span>
+            </button>
+            <button onclick="transitionTo('forum.html', 'fade')" class="flex flex-col items-center gap-1 group w-12 active:scale-90 transition-transform">
+                <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+                <span class="text-[9px] font-bold text-gray-400">论坛</span>
+            </button>
+            <button onclick="transitionTo('shop.html', 'fade')" class="flex flex-col items-center gap-1 group w-12 active:scale-90 transition-transform">
+                <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <span class="text-[9px] font-bold text-gray-400">商城</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 group w-12 active:scale-90 transition-transform">
+                <svg class="w-6 h-6 text-[#4FBFFF]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span class="text-[9px] font-bold text-[#4FBFFF]">我的</span>
+            </button>
+        </nav>
+    </main>
+
+    <script>
+        // --- 本地状态同步 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentUser = localStorage.getItem('current_session_user') || '游客';
+            document.getElementById('username-display').textContent = currentUser;
+            document.getElementById('user-avatar').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${currentUser}`;
+            
+            renderMasonryFeed();
+        });
+
+        // --- 模拟瀑布流数据 ---
+        const masonryData = [
+            { id: 1, image: 'xiaoju.png', cat: '小橘', title: '给猫拍一张，它在看什么呢？', likes: 128, isLiked: false },
+            { id: 2, image: 'naigai.png', cat: '可乐', title: '冬日里的第一缕暖阳，暖洋洋的。', likes: 256, isLiked: true },
+            { id: 3, image: 'zhimahu.png', cat: '芝麻糊', title: '睡午觉时间到！', likes: 88, isLiked: false },
+            { id: 4, image: 'naigai.png', cat: '奶盖', title: '仙女下凡中...', likes: 520, isLiked: true }
+        ];
+
+        // --- 瀑布流渲染 ---
+        function renderMasonryFeed() {
+            const container = document.getElementById('masonry-feed');
+            let html = '';
+
+            masonryData.forEach((item, index) => {
+                const delay = index * 0.15;
+                const heartState = item.isLiked ? 'like-active' : 'text-gray-300';
+
+                html += `
+                <div class="masonry-item stagger-item bg-white rounded-2xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-white active:scale-95 transition-transform" style="animation-delay: ${delay}s;">
+                    <div class="relative group">
+                        <img src="${item.image}" class="w-full object-cover">
+                        <div class="absolute bottom-2 left-2 px-2 py-0.5 bg-black/20 backdrop-blur-md rounded-lg text-white text-[10px] font-black border border-white/20">
+                            ${item.cat}
+                        </div>
+                    </div>
+                    
+                    <div class="p-3">
+                        <p class="text-[12px] font-bold text-gray-700 leading-snug line-clamp-2 mb-3">${item.title}</p>
+                        <div class="flex justify-end items-center">
+                            <div id="like-wrap-${item.id}" class="flex items-center gap-1 cursor-pointer ${heartState}" onclick="toggleLike(event, ${item.id})">
+                                <svg class="w-4 h-4" fill="${item.isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                                <span id="like-count-${item.id}" class="text-[11px] font-black">${item.likes}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // --- Tab 切换交互 ---
+        function switchTab(index) {
+            const btns = document.querySelectorAll('.tab-btn');
+            const line = document.getElementById('tab-line');
+            const offsets = [4, 76, 140]; // 对应 Tab 的 X 位移
+            
+            line.style.transform = `translateX(${offsets[index]}px)`;
+            
+            btns.forEach((btn, i) => {
+                if(i === index) {
+                    btn.classList.add('text-gray-900', 'font-black');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    btn.classList.remove('text-gray-900', 'font-black');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+
+            // 简单模拟刷新数据
+            document.getElementById('masonry-feed').style.opacity = '0';
+            setTimeout(() => {
+                renderMasonryFeed();
+                document.getElementById('masonry-feed').style.opacity = '1';
+            }, 300);
+        }
+
+        // --- 点赞动效 ---
+        function toggleLike(e, id) {
+            e.stopPropagation();
+            const wrap = document.getElementById(`like-wrap-${id}`);
+            const countSpan = document.getElementById(`like-count-${id}`);
+            const item = masonryData.find(d => d.id === id);
+
+            if (!item.isLiked) {
+                item.isLiked = true;
+                item.likes += 1;
+                countSpan.textContent = item.likes;
+                wrap.classList.remove('text-gray-300');
+                wrap.classList.add('like-active');
+            } else {
+                item.isLiked = false;
+                item.likes -= 1;
+                countSpan.textContent = item.likes;
+                wrap.classList.remove('like-active');
+                wrap.classList.add('text-gray-300');
+            }
+        }
+
+        // --- 路由系统 ---
+        function transitionTo(url, mode = 'fade') {
+            const main = document.getElementById('app-main');
+            if (mode === 'fade') {
+                main.style.animation = "fadeOut 0.25s ease-out forwards";
+            } else if (mode === 'slideRight') {
+                main.classList.add('page-leave-right');
+            }
+            setTimeout(() => { window.location.href = url; }, 250); 
+        }
+    </script>
+</body>
+</html>
