@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>首页 - 流浪喵之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    
+    <style>
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .swiper {
+            width: 100%;
+            padding-top: 10px;
+            padding-bottom: 25px; /* 留出底部阴影空间 */
+        }
+
+        .swiper-slide {
+            width: 280px !important; 
+            height: 380px !important;
+            border-radius: 20px;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.25);
+        }
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes slideOutLeft {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(-30%); opacity: 0.5; }
+        }
+        @keyframes slideInLeft {
+            from { transform: translateX(-30%); opacity: 0.5; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .page-leave-left {
+            animation: slideOutLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .page-enter-left {
+            animation: slideInLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+    </style>
+</head>
+<body class="bg-[#E6F2FF] min-h-screen flex justify-center font-sans antialiased text-gray-800 selection:bg-[#4FBFFF] selection:text-white">
+
+    <main id="app-main" class="w-full max-w-[400px] min-h-[100dvh] relative flex flex-col bg-[#E6F2FF] pb-24 overflow-hidden">
+
+        <header class="flex justify-between items-center px-6 pt-10 pb-3 flex-shrink-0 z-20">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-full overflow-hidden shadow-sm bg-white border-2 border-white">
+                    <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=b6e3f4" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[12px] text-gray-500 font-medium">您好！</span>
+                    <span id="display-username" class="text-[17px] font-bold text-gray-900 tracking-wide">管理员</span>
+                </div>
+            </div>
+            <button class="w-9 h-9 rounded-full bg-white/70 backdrop-blur-sm flex items-center justify-center shadow-sm active:scale-90 transition-transform text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+            </button>
+        </header>
+
+        <div class="px-6 mb-4 z-20">
+            <div class="w-full bg-[#F0F4F8]/80 backdrop-blur-md rounded-full flex items-center justify-between px-4 py-2.5 shadow-sm border border-white/60">
+                <div class="flex items-center gap-2 text-gray-400 w-full">
+                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" placeholder="搜索猫咪、文章或活动" class="bg-transparent text-[13px] outline-none text-gray-700 placeholder-gray-400 w-full" readonly />
+                </div>
+                <button class="text-[#4FBFFF] active:scale-90 transition-transform flex-shrink-0">
+                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="px-6 mb-2 w-full z-20">
+            <div class="grid grid-cols-4 gap-y-3">
+                <button onclick="goToVideoDetail()" class="flex flex-col items-center gap-1.5 active:scale-95 transition-transform group">
+                    <div class="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#FFE5B4] to-[#FFD180] flex items-center justify-center text-xl shadow-sm">🐈</div>
+                    <span class="text-[11px] text-gray-700 font-medium">视频</span>
+                </button>
+                <button class="flex flex-col items-center gap-1.5 active:scale-95 transition-transform group">
+                    <div class="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#E1F5FE] to-[#81D4FA] flex items-center justify-center text-xl shadow-sm">📖</div>
+                    <span class="text-[11px] text-gray-700 font-medium">图鉴</span>
+                </button>
+                <button onclick="goToCareRecords()" class="flex flex-col items-center gap-1.5 active:scale-[0.98] transition-transform group">
+                    <div class="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#E8F5E9] to-[#A5D6A7] flex items-center justify-center text-xl shadow-sm">🛁</div>
+                    <span class="text-[11px] text-gray-700 font-medium whitespace-nowrap">除虫洗澡</span>
+                </button>
+                <button class="flex flex-col items-center gap-1.5 active:scale-95 transition-transform group">
+                    <div class="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#F3E5F5] to-[#CE93D8] flex items-center justify-center text-xl shadow-sm">💡</div>
+                    <span class="text-[11px] text-gray-700 font-medium">知识百科</span>
+                </button>
+                <button onclick="goToNewMember()" class="flex flex-col items-center gap-1.5 active:scale-95 transition-transform group col-span-1">
+                    <div class="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#FFEBEE] to-[#FFAB91] flex items-center justify-center text-xl shadow-sm">🐾</div>
+                    <span class="text-[11px] text-gray-700 font-medium">新成员</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="w-full flex-1 flex flex-col justify-center relative z-10">
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide relative group">
+                        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800&auto=format&fit=crop" alt="Cat" class="w-full h-full object-cover absolute inset-0 z-0">
+                        <div class="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0 pointer-events-none"></div>
+                        <div class="absolute bottom-[75px] left-5 flex flex-col gap-1 text-[13px] text-white font-medium z-10 drop-shadow-md">
+                            <span class="text-[18px] font-bold tracking-wide">橘子</span>
+                            <span>♂ 田园橘猫</span>
+                            <span class="text-white/80 line-clamp-1">大橘为重，干饭第一名</span>
+                        </div>
+                        <button class="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85%] h-[42px] rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium tracking-[0.2em] text-[16px] shadow-[0_4px_15px_rgba(0,0,0,0.2)] active:scale-95 transition-transform flex items-center justify-center z-10">
+                            进入
+                        </button>
+                    </div>
+
+                    <div class="swiper-slide relative group">
+                        <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=800&auto=format&fit=crop" alt="Cat" class="w-full h-full object-cover absolute inset-0 z-0">
+                        <div class="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0 pointer-events-none"></div>
+                        <div class="absolute bottom-[75px] left-5 flex flex-col gap-1 text-[13px] text-white font-medium z-10 drop-shadow-md">
+                            <span class="text-[18px] font-bold tracking-wide">奶盖</span>
+                            <span>♀ 布偶猫</span>
+                            <span class="text-white/80 line-clamp-1">仙女本仙，最爱逗猫棒</span>
+                        </div>
+                        <button class="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85%] h-[42px] rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium tracking-[0.2em] text-[16px] shadow-[0_4px_15px_rgba(0,0,0,0.2)] active:scale-95 transition-transform flex items-center justify-center z-10">
+                            进入
+                        </button>
+                    </div>
+
+                    <div class="swiper-slide relative group">
+                        <img src="https://images.unsplash.com/photo-1495360010541-f48722b34f7d?q=80&w=800&auto=format&fit=crop" alt="Cat" class="w-full h-full object-cover absolute inset-0 z-0">
+                        <div class="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0 pointer-events-none"></div>
+                        <div class="absolute bottom-[75px] left-5 flex flex-col gap-1 text-[13px] text-white font-medium z-10 drop-shadow-md">
+                            <span class="text-[18px] font-bold tracking-wide">芝麻糊</span>
+                            <span>♂ 英短蓝猫</span>
+                            <span class="text-white/80 line-clamp-1">安静温顺，喜欢踩奶贴贴</span>
+                        </div>
+                        <button class="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85%] h-[42px] rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium tracking-[0.2em] text-[16px] shadow-[0_4px_15px_rgba(0,0,0,0.2)] active:scale-95 transition-transform flex items-center justify-center z-10">
+                            进入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="fixed bottom-0 w-full max-w-[400px] bg-white rounded-t-[24px] shadow-[0_-4px_20px_rgba(0,0,0,0.03)] pb-[calc(0.8rem+env(safe-area-inset-bottom))] pt-2.5 px-8 flex justify-between items-center z-50">
+            <button class="flex flex-col items-center gap-1 group w-12 active:scale-90 transition-transform">
+                <svg class="w-[22px] h-[22px] text-[#4FBFFF]" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.99 9a.75.75 0 11-1.04 1.08l-1.48-1.48V20.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-1.5a.75.75 0 00-.75.75v4.5a.75.75 0 01-.75.75H5.25a.75.75 0 01-.75-.75v-8.06l-1.48 1.48a.75.75 0 11-1.04-1.08l8.99-9z"></path></svg>
+                <span class="text-[10px] font-bold text-[#4FBFFF]">首页</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 group w-12 active:scale-90 transition-transform">
+                <svg class="w-[22px] h-[22px] text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+                <span class="text-[10px] font-medium text-gray-400">论坛</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 group w-12 active:scale-90 transition-transform">
+                <svg class="w-[22px] h-[22px] text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <span class="text-[10px] font-medium text-gray-400">商城</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 group w-12 active:scale-90 transition-transform">
+                <svg class="w-[22px] h-[22px] text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span class="text-[10px] font-medium text-gray-400">我的</span>
+            </button>
+        </nav>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromPage = urlParams.get('from');
+            if (['care', 'video', 'detail', 'newMember'].includes(fromPage)) {
+                document.getElementById('app-main').classList.add('page-enter-left');
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+
+            let displayUsername = "管理员";
+            try {
+                const users = JSON.parse(localStorage.getItem('sys_users'));
+                if (users && Array.isArray(users) && users.length > 0) {
+                    displayUsername = users[users.length - 1].username;
+                }
+            } catch(e) { console.error(e); }
+            if(displayUsername.length > 8) displayUsername = displayUsername.substring(0, 8) + '...';
+            document.getElementById('display-username').textContent = displayUsername;
+        });
+
+        function transitionTo(url) {
+            const main = document.getElementById('app-main');
+            main.classList.remove('page-enter-left'); 
+            main.classList.add('page-leave-left'); // 向左滑动滑出，形成推页感
+            setTimeout(() => {
+                window.location.href = url;
+            }, 300);
+        }
+
+        function goToVideoDetail() { transitionTo('video-detail.html'); }
+        function goToCareRecords() { transitionTo('care-records.html'); }
+        function goToNewMember() { transitionTo('add-cat.html'); }
+
+        const swiper = new Swiper('.mySwiper', {
+            effect: 'coverflow',
+            grabCursor: true,
+            centeredSlides: true,
+            slidesPerView: 'auto', 
+            loop: true,
+            coverflowEffect: {
+                rotate: 0,
+                stretch: 250,      // 【核心调整】缩小负值，让两边的卡片向外退出一点，露出完美的边缘
+                depth: 160,        // 【核心调整】减小深度，让后面的卡片保持清晰的比例，不会过于缩小
+                modifier: 1,
+                slideShadows: true 
+            },
+            speed: 350,
+        });
+    </script>
+</body>
+</html>

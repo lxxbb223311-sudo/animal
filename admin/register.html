@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>注册 - 流浪喵之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 页面级切换动画 (原生 App 质感) */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 0.5; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .page-enter {
+            animation: slideInRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .page-leave {
+            animation: slideOutRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* 覆盖浏览器默认的输入框交互样式 */
+        input {
+            -webkit-tap-highlight-color: transparent;
+        }
+        input:focus {
+            outline: none;
+        }
+        /* 定制 placeholder 颜色 */
+        input::placeholder {
+            color: #C0C4CC;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body class="bg-[#E6F2FF] min-h-screen flex justify-center font-sans antialiased overflow-hidden selection:bg-[#F1C84B] selection:text-white">
+
+    <main id="app-main" class="w-full max-w-[400px] h-[100dvh] relative flex flex-col px-8 page-enter bg-[#E6F2FF]">
+
+        <header class="pt-14 pb-2 flex-shrink-0">
+            <button onclick="handleBack()" class="p-2 -ml-2 transition-transform active:scale-90 text-gray-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+        </header>
+
+        <div class="flex-1 flex flex-col pt-6 pb-32 justify-center relative z-10">
+            <h1 class="text-[26px] font-bold text-gray-900 mb-12 tracking-wide">
+                注册
+            </h1>
+
+            <div class="flex flex-col gap-8 w-full">
+                <div class="border-b border-[#D6DCE5] focus-within:border-gray-500 transition-colors pb-3 flex items-center">
+                    <input type="text" id="reg-username" placeholder="请输入用户名" class="w-full bg-transparent text-[16px] text-gray-900 font-medium" />
+                </div>
+
+                <div class="border-b border-[#D6DCE5] focus-within:border-gray-500 transition-colors pb-3 flex items-center">
+                    <input type="tel" id="reg-phone" placeholder="请输入手机号" class="w-full bg-transparent text-[16px] text-gray-900 font-medium" />
+                </div>
+
+                <div class="border-b border-[#D6DCE5] focus-within:border-gray-500 transition-colors pb-3 flex justify-between items-center">
+                    <input type="text" id="reg-code" placeholder="请输入手机验证码" class="w-full bg-transparent text-[16px] text-gray-900 font-medium" />
+                    <button type="button" class="text-[14px] text-[#B0B6C0] font-medium whitespace-nowrap pl-4 active:text-gray-500 transition-colors">
+                        获取验证码
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="handleRegister()" class="w-full bg-[#EFCC4D] hover:bg-[#e4c247] mt-12 py-[14px] rounded-full text-[17px] font-bold tracking-widest shadow-sm transition-transform duration-200 active:scale-95 flex items-center justify-center text-[#90721B]">
+                注册
+            </button>
+
+            <div class="mt-6 text-center">
+                <a href="#" onclick="goToLogin()" class="inline-flex items-center text-[13px] text-[#9095A0] font-medium active:text-gray-700 transition-colors">
+                    已注册，去登录 
+                    <svg class="w-3.5 h-3.5 ml-1 mt-[1px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 平滑返回首页
+        function handleBack() {
+            const main = document.getElementById('app-main');
+            main.classList.remove('page-enter');
+            main.classList.add('page-leave');
+            setTimeout(() => {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 280); 
+        }
+
+        // 平滑跳转到登录页
+        function goToLogin() {
+            const main = document.getElementById('app-main');
+            main.classList.remove('page-enter');
+            main.classList.add('page-leave');
+            setTimeout(() => {
+                window.location.href = 'admin-login.html';
+            }, 280); 
+        }
+
+        // 注册核心逻辑 (纯前端缓存)
+        function handleRegister() {
+            const userVal = document.getElementById('reg-username').value.trim();
+            const phoneVal = document.getElementById('reg-phone').value.trim();
+            const codeVal = document.getElementById('reg-code').value.trim();
+
+            // 基础校验
+            if (!userVal) return alert('请输入用户名！');
+            if (!phoneVal) return alert('请输入手机号！');
+            if (!codeVal) return alert('请输入验证码！');
+
+            // 获取本地缓存用户数据
+            let users = JSON.parse(localStorage.getItem('sys_users')) || [];
+
+            // 查重：用户名是否已被注册
+            if (users.find(u => u.username === userVal)) {
+                alert('该用户名已被注册，请更换！');
+                return;
+            }
+
+            // 核心要求：将用户名存为 username，手机号存为 password (以便与登录页逻辑互通)
+            users.push({ username: userVal, password: phoneVal });
+            localStorage.setItem('sys_users', JSON.stringify(users));
+
+            // 成功提示并跳转
+            alert('注册成功，请前往登录！');
+            goToLogin();
+        }
+    </script>
+</body>
+</html>
