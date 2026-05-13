@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="网站名称">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>个人中心 - 流浪喵之家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -104,8 +113,8 @@
                     <span class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">粉丝</span>
                 </div>
                 <div class="w-[1px] h-8 bg-gray-300/30 my-auto"></div>
-                <div class="flex flex-col items-center">
-                    <span class="text-[18px] font-black text-gray-900">10</span>
+                <div class="flex flex-col items-center cursor-pointer active:opacity-70 transition-opacity" onclick="goToLikes(10)">
+                    <span id="likes-total-count" class="text-[18px] font-black text-gray-900">10</span>
                     <span class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">获赞</span>
                 </div>
             </div>
@@ -123,7 +132,7 @@
                     </div>
                     <span class="text-[10px] font-bold text-gray-600">设置</span>
                 </div>
-                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                <div onclick="transitionTo('reviews.html', 'slideLeft')" class="flex flex-col items-center gap-2 group cursor-pointer">
                     <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-active:scale-90 transition-transform border border-white">
                         <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                     </div>
@@ -266,6 +275,12 @@
                 wrap.classList.remove('like-active');
                 wrap.classList.add('text-gray-300');
             }
+        }
+
+        // --- 跳转获赞页面 ---
+        function goToLikes(count) {
+            localStorage.setItem('user_likes_count', count);
+            transitionTo('likes.html', 'slideLeft');
         }
 
         // --- 路由系统 ---

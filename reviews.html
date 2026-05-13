@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>我的评价 - 流浪喵之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 延续项目核心动画 */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 0.5; } to { transform: translateX(100%); opacity: 0; } }
+        
+        .page-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .page-leave-right { animation: slideOutRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        
+        .stagger-item {
+            opacity: 0;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
+
+        /* Tab 激活线平滑过渡 */
+        .tab-underline {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-[#E6F2FF] min-h-screen flex justify-center font-sans antialiased text-gray-800 overflow-hidden">
+
+    <main id="app-main" class="w-full max-w-[400px] h-[100dvh] relative flex flex-col page-fade-in bg-[#E6F2FF]">
+
+        <header class="sticky top-0 z-40 bg-white/70 backdrop-blur-xl px-5 pt-[env(safe-area-inset-top)] pb-2 flex-shrink-0 border-b border-white/50 shadow-sm">
+            <div class="pt-8 flex items-center justify-between relative">
+                <button onclick="handleBack()" class="p-2 -ml-2 active:scale-75 transition-transform text-gray-900 z-10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h1 class="text-[18px] font-bold text-gray-900 absolute left-1/2 -translate-x-1/2">我的评价</h1>
+                <div class="w-10"></div> </div>
+
+            <div class="flex items-center justify-around mt-4 px-2 relative h-10">
+                <button onclick="switchTab(0, this)" class="text-[14px] font-black text-gray-900 transition-all">全部</button>
+                <button onclick="switchTab(1, this)" class="text-[14px] font-medium text-gray-400 active:scale-95 transition-all">带图评价</button>
+                <button onclick="switchTab(2, this)" class="text-[14px] font-medium text-gray-400 active:scale-95 transition-all">领养反馈</button>
+                <div id="tab-line" class="tab-underline absolute bottom-0 left-[11%] w-8 h-1 bg-[#4FBFFF] rounded-full"></div>
+            </div>
+        </header>
+
+        <div id="reviews-container" class="flex-1 overflow-y-auto hide-scrollbar px-5 pt-5 pb-10 flex flex-col gap-4">
+            </div>
+
+    </main>
+
+    <script>
+        // 1. 模拟评价数据 (Mock Data)
+        const mockReviews = [
+            {
+                id: 1,
+                target: "阳光猫咪救助站",
+                icon: "🏠",
+                date: "2024-05-10",
+                stars: 5,
+                content: "这里的橘猫很亲人，环境也很干净。领养过程非常规范，工作人员很有耐心。给所有想领养的小伙伴点赞！",
+                images: ["https://cataas.com/cat?width=300", "https://cataas.com/cat/says/cute?width=300"]
+            },
+            {
+                id: 2,
+                target: "喵趣主食罐头 (商城)",
+                icon: "🛒",
+                date: "2024-04-15",
+                stars: 4,
+                content: "家里的主子很喜欢吃，配料表挺干净的，下次还会回购。发货速度也很快，就是包装稍微有一点点挤压。",
+                images: []
+            },
+            {
+                id: 3,
+                target: "志愿者：小李",
+                icon: "👤",
+                date: "2024-03-22",
+                stars: 5,
+                content: "非常感谢小李同学协助我完成了领养的回访。人非常专业，对猫咪的习性也很了解，给了很多有用的建议！",
+                images: ["https://cataas.com/cat?tag=sleep"]
+            },
+            {
+                id: 4,
+                target: "爱心义卖：猫爬架",
+                icon: "🎈",
+                date: "2024-01-05",
+                stars: 5,
+                content: "质量非常好，很稳。而且收益是捐给流浪猫医疗基金的，觉得很有意义！",
+                images: ["https://cataas.com/cat?width=301", "https://cataas.com/cat?width=302", "https://cataas.com/cat?width=303"]
+            }
+        ];
+
+        // 2. 核心渲染函数
+        function renderReviews() {
+            const container = document.getElementById('reviews-container');
+            let html = '';
+
+            mockReviews.forEach((item, index) => {
+                const delay = index * 0.15; // 级联延迟
+                
+                // 渲染星星 SVG
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    const color = i <= item.stars ? "#F1C84B" : "#E5E7EB";
+                    starsHtml += `<svg class="w-4 h-4" fill="${color}" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+                }
+
+                // 渲染图片缩略图
+                let imgsHtml = '';
+                if (item.images.length > 0) {
+                    imgsHtml = `<div class="flex gap-2 mt-3 overflow-x-auto hide-scrollbar">`;
+                    item.images.forEach(img => {
+                        imgsHtml += `
+                            <div class="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden active:scale-95 transition-transform">
+                                <img src="${img}" class="w-full h-full object-cover" loading="lazy" />
+                            </div>`;
+                    });
+                    imgsHtml += `</div>`;
+                }
+
+                html += `
+                <div class="stagger-item bg-white p-4 rounded-2xl shadow-[0_4px_15px_rgba(0,0,0,0.02)] border border-white/50 active:scale-[0.98] transition-all" style="animation-delay: ${delay}s">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-[#E6F2FF] flex items-center justify-center text-[16px]">${item.icon}</div>
+                            <span class="text-[14px] font-bold text-gray-800">${item.target}</span>
+                        </div>
+                        <span class="text-[11px] text-gray-400 font-medium">${item.date}</span>
+                    </div>
+                    
+                    <div class="flex gap-0.5 mb-2">
+                        ${starsHtml}
+                    </div>
+                    
+                    <p class="text-[13px] text-gray-600 leading-relaxed font-medium">
+                        ${item.content}
+                    </p>
+                    
+                    ${imgsHtml}
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 3. Tab 切换交互
+        function switchTab(index, el) {
+            const line = document.getElementById('tab-line');
+            const btns = el.parentElement.querySelectorAll('button');
+            
+            // 更新指示线位置
+            const offsets = ['11%', '45%', '79%'];
+            line.style.left = offsets[index];
+
+            // 更新字体样式
+            btns.forEach(btn => {
+                btn.classList.remove('font-black', 'text-gray-900');
+                btn.classList.add('font-medium', 'text-gray-400');
+            });
+            el.classList.add('font-black', 'text-gray-900');
+            el.classList.remove('text-gray-400');
+
+            // 触发列表刷新动画
+            const container = document.getElementById('reviews-container');
+            container.style.opacity = "0";
+            container.style.transform = "translateY(10px)";
+            setTimeout(() => {
+                container.style.opacity = "1";
+                container.style.transform = "translateY(0)";
+                renderReviews();
+            }, 300);
+        }
+
+        // 4. 返回上一页
+        function handleBack() {
+            const main = document.getElementById('app-main');
+            main.classList.add('page-leave-right');
+            setTimeout(() => {
+                window.location.href = 'profile.html';
+            }, 300);
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', renderReviews);
+    </script>
+</body>
+</html>

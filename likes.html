@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>获赞列表 - 流浪喵之家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 页面级切换动画：向左推入 */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 0.5; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .page-enter { animation: slideInRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .page-leave-right { animation: slideOutRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
+
+        /* 炫技点 A：列表项错落入场动画 */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stagger-item {
+            opacity: 0;
+            animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+    </style>
+</head>
+<body class="bg-[#E6F2FF] min-h-screen flex justify-center font-sans antialiased text-gray-800 overflow-hidden selection:bg-[#4FBFFF] selection:text-white">
+
+    <main id="app-main" class="w-full max-w-[400px] h-[100dvh] relative flex flex-col page-enter bg-[#E6F2FF]">
+
+        <header class="pt-[env(safe-area-inset-top)] pb-3 flex-shrink-0 z-40 bg-[#E6F2FF]/95 backdrop-blur-md sticky top-0">
+            <div class="pt-10 px-5 flex items-center justify-between relative">
+                <button onclick="handleBack()" class="p-2 -ml-2 active:scale-75 transition-transform text-gray-900 z-10">
+                    <svg class="w-[24px] h-[24px]" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="flex flex-col items-center absolute left-1/2 -translate-x-1/2">
+                    <h1 class="text-[18px] font-black text-gray-900 leading-tight tracking-wide">被赞</h1>
+                    <span id="subtitle-count" class="text-[11px] text-gray-400 font-bold mt-0.5">0个人赞过你</span>
+                </div>
+
+                <div class="w-6"></div> </div>
+        </header>
+
+        <div id="likes-list-container" class="flex-1 overflow-y-auto hide-scrollbar px-5 pt-6 pb-[env(safe-area-inset-bottom)] flex flex-col">
+            </div>
+
+    </main>
+
+    <script>
+        // --- 炫技点 B：动态数据生成与渲染逻辑 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 获取获赞数量，默认 fallback 为 5
+            const count = parseInt(localStorage.getItem('user_likes_count')) || 5;
+            document.getElementById('subtitle-count').textContent = `${count}个人赞过你`;
+
+            renderLikesList(count);
+        });
+
+        // 模拟用户库
+        const userNames = ['喵星人', '铲屎官大壮', '爱猫者', '小红', '流浪猫救助', 'Cc', '喵趣小店', '芝麻糊主人', '布偶控', '加菲'];
+        const userMottos = ['最爱小猫', '家有三只橘猫', '科学养猫践行者', '每天都要撸猫', '关爱流浪动物', '分享猫咪日常'];
+
+        function renderLikesList(n) {
+            const container = document.getElementById('likes-list-container');
+            let html = '';
+
+            for (let i = 0; i < n; i++) {
+                // 随机化数据
+                const randomName = userNames[i % userNames.length];
+                const randomMotto = userMottos[i % userMottos.length];
+                const seed = Math.floor(Math.random() * 1000);
+                
+                // 级联动画延迟参数
+                const delay = i * 0.08;
+
+                html += `
+                <div class="stagger-item flex items-center justify-between py-4 border-b border-gray-200/50" style="animation-delay: ${delay}s;">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-white shrink-0">
+                            <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=${seed}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[15px] font-bold text-gray-900">${randomName}</span>
+                            <span class="text-[12px] text-gray-400 font-medium">${randomMotto}</span>
+                        </div>
+                    </div>
+
+                    <button onclick="toggleFollow(this)" class="follow-btn border border-[#FACC15] text-[#D97706] bg-white rounded-full px-4 py-1.5 text-[12px] font-black active:scale-95 transition-all shadow-sm">
+                        + 关注
+                    </button>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // --- 炫技点 C：按钮状态机切换 ---
+        function toggleFollow(btn) {
+            const isFollowing = btn.getAttribute('data-following') === 'true';
+
+            if (!isFollowing) {
+                // 切换到：已关注
+                btn.setAttribute('data-following', 'true');
+                btn.textContent = '已关注';
+                btn.className = 'follow-btn border border-gray-300 text-gray-400 bg-white rounded-full px-4 py-1.5 text-[12px] font-bold active:scale-95 transition-all';
+            } else {
+                // 切换回：未关注
+                btn.setAttribute('data-following', 'false');
+                btn.textContent = '+ 关注';
+                btn.className = 'follow-btn border border-[#FACC15] text-[#D97706] bg-white rounded-full px-4 py-1.5 text-[12px] font-black active:scale-95 transition-all shadow-sm';
+            }
+        }
+
+        // --- 路由：平滑返回 ---
+        function handleBack() {
+            const main = document.getElementById('app-main');
+            // 触发离场动画：向右推走
+            main.classList.remove('page-enter');
+            main.classList.add('page-leave-right');
+            setTimeout(() => {
+                window.location.href = 'profile.html';
+            }, 300);
+        }
+    </script>
+</body>
+</html>
