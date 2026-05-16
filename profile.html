@@ -59,11 +59,7 @@
         }
         .masonry-item {
             break-inside: avoid;
-            page-break-inside: avoid; /* 增加移动端兼容性 */
-            -webkit-column-break-inside: avoid; /* 增加移动端Safari兼容性 */
             margin-bottom: 12px;
-            display: inline-block; /* 修复移动端加载不全/内容被截断的核心关键 */
-            width: 100%; /* 配合inline-block撑满列宽 */
         }
 
         /* Tab 激活指示器动画 */
@@ -181,6 +177,7 @@
     </main>
 
     <script>
+        // --- 本地状态同步 ---
         document.addEventListener('DOMContentLoaded', () => {
             const currentUser = localStorage.getItem('current_session_user') || '游客';
             document.getElementById('username-display').textContent = currentUser;
@@ -191,10 +188,7 @@
 
         // --- 模拟瀑布流数据 ---
         const masonryData = [
-            { id: 1, image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400&h=400&fit=crop', cat: '小橘', title: '给猫拍一张，它在看什么呢？', likes: 128, isLiked: false },
-            { id: 2, image: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=400&h=600&fit=crop', cat: '可乐', title: '冬日里的第一缕暖阳，暖洋洋的。', likes: 256, isLiked: true },
-            { id: 3, image: 'https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=400&h=480&fit=crop', cat: '芝麻糊', title: '睡午觉时间到！', likes: 88, isLiked: false },
-            { id: 4, image: 'https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?q=80&w=400&h=320&fit=crop', cat: '奶盖', title: '仙女下凡测试中...', likes: 520, isLiked: true }
+            { id: 1, image: 'xiaoju.webp', cat: '小橘', title: '给猫拍一张，它在看什么呢？', likes: 128, isLiked: false }
         ];
 
         // --- 瀑布流渲染 ---
@@ -275,9 +269,6 @@
                 countSpan.textContent = item.likes;
                 wrap.classList.remove('like-active');
                 wrap.classList.add('text-gray-300');
-                
-                wrap.classList.remove('like-active');
-                void wrap.offsetWidth;
             }
         }
 
@@ -294,8 +285,6 @@
                 main.style.animation = "fadeOut 0.25s ease-out forwards";
             } else if (mode === 'slideRight') {
                 main.classList.add('page-leave-right');
-            } else if (mode === 'slideLeft') {
-                main.classList.add('page-leave-left'); // 添加了向左滑出的兜底
             }
             setTimeout(() => { window.location.href = url; }, 250); 
         }
